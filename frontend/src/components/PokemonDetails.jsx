@@ -7,7 +7,7 @@ const LABELS = [
   ["specialAttack", "Special Attack"], ["specialDefense", "Special Defense"], ["speed", "Speed"],
 ];
 
-export default function PokemonDetails({ pokemon, onClose }) {
+export default function PokemonDetails({ pokemon, onClose, onEdit, onDelete }) {
   const color = getTypeColor(pokemon.types[0]?.name);
   return (
     <div className="overlay" onClick={onClose}>
@@ -24,6 +24,10 @@ export default function PokemonDetails({ pokemon, onClose }) {
               <strong>{pokemon.stats[key]}</strong>
             </div>
           ))}
+        </div>
+        <div className="detail-actions">
+          <button className="btn-edit" onClick={() => onEdit(pokemon)}>✏️ Editar</button>
+          <button className="btn-delete" onClick={() => onDelete(pokemon)}>🗑️ Excluir</button>
         </div>
       </div>
     </div>

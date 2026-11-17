@@ -8,9 +8,19 @@ import TrainersPanel from "./components/TrainersPanel";
 import Header from "./components/Header";
 import Toolbar from "./components/Toolbar";
 import { usePokemons } from "./hooks/usePokemons";
-import PokemonForm from ".components/PokemonForm";
+import PokemonForm from "./components/PokemonForm";
 
 export default function App() {
+  const { pokemons, loading, error, add, edit, remove } = usePokemons();
+  const [editing, setEditing] = useState(null); // null | {} (novo) | pokemon (edição)
+
+  const typeOptions = useMemo(() => {
+    const map = new Map();
+    pokemons.forEach((p) => p.types.forEach((t) => map.set(t.id, t)));
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [pokemons]);
+  const pokemonTypes = typeOptions.map((t) => t.name);
+
   const [view, setView] = useState("pokedex");
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState("");
@@ -52,8 +62,29 @@ export default function App() {
 });
 
 const handleRandom = () => {
+  if (!pokemons.length) return;
   setSelected(pokemons[Math.floor(Math.random() * pokemons.length)]);
 };
+
+const handleSave = async (data) => {
+  if (editing?.id) {
+    const updated = await edit(editing.id, data);
+    if (selected?.id === updated.id) setSelected(updated);
+  } else {
+    await add(data);
+  }
+  setEditing(null);
+};
+
+const handleDelete = async (p) => {
+  if (!window.confirm(`Excluir ${p.name}?`)) return;
+  await remove(p.id);
+  setFavorites((prev) => prev.filter((f) => f !== p.id));
+  setSelected(null);
+};
+
+if (loading) return <p className="empty">Carregando...</p>;
+if (error) return <p className="empty">{error}</p>;
 
   return (
     <div className="app">
@@ -62,14 +93,30 @@ const handleRandom = () => {
         <>
           <SearchBar value={search} onChange={setSearch} />
           <TypeFilter types={pokemonTypes} selected={selectedType} onChange={setSelectedType} />
+          <button className="btn-new" onClick={() => setEditing({})}>➕ Novo Pokémon</button>
           <Toolbar sortBy={sortBy} onSortChange={setSortBy} onRandom={handleRandom} onlyFavorites={onlyFavorites} onToggleOnlyFavorites={() => setOnlyFavorites((v) => !v)} />
           <PokemonList pokemons={sorted} onSelect={setSelected} favorites={favorites} onToggleFavorite={toggleFavorite} />
         </>
       ) : (
-        <TrainersPanel trainers={trainers} onSelectPokemon={setSelected} />
+        <TrainersPanel trainers={trainers} pokemons={pokemons} onSelectPokemon={setSelected} />
       )}
 
-      {selected && <PokemonDetails pokemon={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <PokemonDetails
+          pokemon={selected}
+          onClose={() => setSelected(null)}
+          onEdit={(p) => { setSelected(null); setEditing(p); }}
+          onDelete={handleDelete}
+        />
+      )}
+      {editing && (
+        <PokemonForm
+          initial={editing.id ? editing : null}
+          typeOptions={typeOptions}
+          onSubmit={handleSave}
+          onCancel={() => setEditing(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,17 @@
+.form-modal { text-align: left; }
+.form-modal h2 { margin-bottom: 1rem; text-align: center; }
+.field { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .8rem; font-size: .9rem; }
+.field input { padding: .55rem .7rem; border-radius: 8px; border: 2px solid #2d3248; background: #12141c; color: #fff; font-size: 1rem; }
+.field input:focus { outline: none; border-color: #ffcb05; }
+.form-modal .type-filter { margin: 0; }
+.stat-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 .8rem; }
+.form-error { color: #ff6b6b; margin: .4rem 0; }
+.form-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1rem; }
+.btn-primary, .btn-secondary, .btn-new, .btn-edit, .btn-delete { border: 0; border-radius: 8px; padding: .55rem 1.1rem; font-weight: 600; color: #fff; }
+.btn-primary { background: #2e9d4f; }
+.btn-primary:disabled { opacity: .6; cursor: wait; }
+.btn-secondary { background: #3a3f55; }
+.btn-new { background: #2e9d4f; }
+.btn-edit { background: #3b4cca; }
+.btn-delete { background: #e63946; }
+.detail-actions { display: flex; justify-content: center; gap: .6rem; margin-top: 1.2rem; }
