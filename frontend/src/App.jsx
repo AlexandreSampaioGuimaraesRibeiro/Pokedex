@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { pokemons, trainers, pokemonTypes } from "./utils/data";
 import SearchBar from "./components/SearchBar";
 import TypeFilter from "./components/TypeFilter";
