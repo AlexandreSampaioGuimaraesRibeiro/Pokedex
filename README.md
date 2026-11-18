@@ -51,7 +51,7 @@ React + Vite  ──►  Spring Boot REST API  ──►  MongoDB Atlas
 Pokedex/
 ├── backend/
 │   ├── src/main/java/com/pokedex/
-│   │   ├── config/          # CORS e carga inicial dos dados (DataSeeder)
+│   │   ├── config/          # CORS, DataSeeder e SqlInsertParser (carga a partir do .sql)
 │   │   ├── controller/      # PokemonController (endpoints REST)
 │   │   ├── model/           # Pokemon, Stats, PokemonType
 │   │   ├── repository/      # PokemonRepository (Spring Data MongoDB)
@@ -59,7 +59,7 @@ Pokedex/
 │   │   └── PokedexApplication.java
 │   ├── src/main/resources/
 │   │   ├── application.properties
-│   │   └── pokedex-data.json   # dados usados na carga inicial
+│   │   └── Script_Pokedex.sql  # cópia do script, lida na carga inicial
 │   └── pom.xml
 │
 ├── frontend/
@@ -75,7 +75,7 @@ Pokedex/
 │   ├── package.json
 │   └── vite.config.js
 │
-├── Script_Pokedex.sql       # script de dados fornecido na atividade
+├── Script_Pokedex.sql       # script de dados fornecido na atividade (fonte dos dados)
 └── README.md
 ```
 
@@ -143,11 +143,13 @@ $env:MONGODB_URI="mongodb+srv://<usuario>:<senha>@<cluster>.mongodb.net/pokedex?
 .\mvnw.cmd spring-boot:run
 ```
 
-Na primeira execução, com a coleção vazia, o backend importa os Pokémon do arquivo `src/main/resources/pokedex-data.json` e exibe no console:
+Na primeira execução, com a coleção `pokemons` vazia, o backend lê o `Script_Pokedex.sql` (em `src/main/resources`), converte as tabelas relacionais em documentos e os grava no MongoDB, exibindo no console:
 
 ```text
-151 Pokémon importados para o MongoDB.
+151 Pokémon importados do Script_Pokedex.sql para o MongoDB.
 ```
+
+Nas execuções seguintes, como a coleção já tem dados, nada é importado de novo.
 
 A API fica disponível em **http://localhost:8080**. Para conferir, abra `http://localhost:8080/api/pokemons` no navegador.
 
@@ -226,7 +228,16 @@ curl -X POST http://localhost:8080/api/pokemons \
 
 ## 🧱 Modelagem dos dados
 
-Os dados ficam na coleção **`pokemons`** do MongoDB, no modelo de documentos, com os atributos e os tipos **embutidos** em cada Pokémon. Assim, uma única consulta traz tudo o que a interface precisa, sem junções como no modelo relacional do `Script_Pokedex.sql`.
+Os dados vêm do `Script_Pokedex.sql`, que está no modelo relacional, e são adaptados para o modelo de documentos do MongoDB, na coleção **`pokemons`**:
+
+| Script SQL | MongoDB |
+|---|---|
+| Tabela `Pokemon` (nome e 6 atributos) | Um documento por Pokémon: `name` e o objeto `stats` |
+| Tabelas `Rel_Pokemon_Type` + `Types` | Lista `types` embutida em cada documento |
+
+Assim, uma única consulta traz tudo o que a interface precisa, sem junções. Pokémon sem tipo no script (como o Mew) ficam com `types` vazio.
+
+As tabelas `Trainers` e `Rel_Trainer_Pokemon` não são gravadas no MongoDB: a área de treinadores do front-end ainda usa o arquivo `pokedex-data.json` local.
 
 | Campo | Tipo | Descrição |
 |---|---|---|
@@ -274,6 +285,6 @@ Nenhuma imagem é armazenada no banco de dados ou no repositório. A exibição 
 - **Instituição:** PUC Minas — campus Lourdes
 - **Atividade:** 04 — Pokédex com Spring Boot + MongoDB
 
-## 👥 Autore
+## 👥 Autor
 
 - Alexandre Sampaio Guimarães Ribeiro
