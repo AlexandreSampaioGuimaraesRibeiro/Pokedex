@@ -1,0 +1,9 @@
+.panel-actions { margin-bottom: 1rem; }
+.trainer-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; }
+.team-picked { display: flex; flex-wrap: wrap; gap: .5rem; min-height: 84px; margin-bottom: .6rem; }
+.hint { opacity: .7; font-size: .85rem; margin-top: .3rem; }
+.pick-list { list-style: none; margin-top: .4rem; max-height: 220px; overflow: auto; border: 2px solid #2d3248; border-radius: 8px; }
+.pick-list button { display: flex; align-items: center; gap: .6rem; width: 100%; background: #1b1e2b; color: #fff; border: 0; padding: .3rem .6rem; text-align: left; }
+.pick-list button:hover:not(:disabled) { background: #2d3248; }
+.pick-list button:disabled { opacity: .5; cursor: not-allowed; }
+.pick-list img { width: 36px; height: 36px; object-fit: contain; }

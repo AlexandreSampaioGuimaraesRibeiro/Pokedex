@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { pokemons, trainers, pokemonTypes } from "./utils/data";
 import SearchBar from "./components/SearchBar";
 import TypeFilter from "./components/TypeFilter";
 import PokemonList from "./components/PokemonList";
@@ -9,9 +8,27 @@ import Header from "./components/Header";
 import Toolbar from "./components/Toolbar";
 import { usePokemons } from "./hooks/usePokemons";
 import PokemonForm from "./components/PokemonForm";
+import { useTrainers } from "./hooks/useTrainers";
+import TrainerForm from "./components/TrainerForm";
 
 export default function App() {
-  const { pokemons, loading, error, add, edit, remove } = usePokemons();
+  const { pokemons, loading, error, edit, remove } = usePokemons();
+  const {
+    trainers, loading: trainersLoading, error: trainersError,
+    add: addTrainer, edit: editTrainer, remove: removeTrainer,
+  } = useTrainers();
+  const [editingTrainer, setEditingTrainer] = useState(null); // null | {} (novo) | treinador
+
+  const handleSaveTrainer = async (data) => {
+    if (editingTrainer?.id) await editTrainer(editingTrainer.id, data);
+    else await addTrainer(data);
+    setEditingTrainer(null);
+  };
+
+  const handleDeleteTrainer = async (t) => {
+    if (!window.confirm(`Excluir o treinador ${t.name}?`)) return;
+    await removeTrainer(t.id);
+  };
   const [editing, setEditing] = useState(null); // null | {} (novo) | pokemon (edição)
 
   const typeOptions = useMemo(() => {
@@ -69,12 +86,8 @@ const handleRandom = () => {
 };
 
 const handleSave = async (data) => {
-  if (editing?.id) {
-    const updated = await edit(editing.id, data);
-    if (selected?.id === updated.id) setSelected(updated);
-  } else {
-    await add(data);
-  }
+  const updated = await edit(editing.id, data);
+  if (selected?.id === updated.id) setSelected(updated);
   setEditing(null);
 };
 
@@ -95,12 +108,18 @@ if (error) return <p className="empty">{error}</p>;
         <>
           <SearchBar value={search} onChange={setSearch} />
           <TypeFilter types={pokemonTypes} selected={selectedType} onChange={setSelectedType} />
-          <button className="btn-new" onClick={() => setEditing({})}>➕ Novo Pokémon</button>
           <Toolbar sortBy={sortBy} onSortChange={setSortBy} onRandom={handleRandom} onlyFavorites={onlyFavorites} onToggleOnlyFavorites={() => setOnlyFavorites((v) => !v)} />
           <PokemonList pokemons={sorted} onSelect={setSelected} favorites={favorites} onToggleFavorite={toggleFavorite} />
         </>
       ) : (
-        <TrainersPanel trainers={trainers} pokemons={pokemons} onSelectPokemon={setSelected} />
+          <TrainersPanel
+            trainers={trainers} pokemons={pokemons}
+            loading={trainersLoading} error={trainersError}
+            onSelectPokemon={setSelected}
+            onAdd={() => setEditingTrainer({})}
+            onEdit={setEditingTrainer}
+            onDelete={handleDeleteTrainer}
+          />
       )}
 
       {selected && (
@@ -113,10 +132,18 @@ if (error) return <p className="empty">{error}</p>;
       )}
       {editing && (
         <PokemonForm
-          initial={editing.id ? editing : null}
+          initial={editing}
           typeOptions={typeOptions}
           onSubmit={handleSave}
           onCancel={() => setEditing(null)}
+        />
+      )}
+      {editingTrainer && (
+        <TrainerForm
+          initial={editingTrainer.id ? editingTrainer : null}
+          pokemons={pokemons}
+          onSubmit={handleSaveTrainer}
+          onCancel={() => setEditingTrainer(null)}
         />
       )}
     </div>
