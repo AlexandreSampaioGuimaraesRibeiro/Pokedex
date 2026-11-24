@@ -21,16 +21,16 @@ React + Vite  ──►  Spring Boot REST API  ──►  MongoDB Atlas
 - Mensagem amigável quando nenhum Pokémon é encontrado.
 - Estados de **carregamento** e de **erro** quando o backend não está disponível.
 
-**CRUD integrado à API**
-- ➕ Cadastrar Pokémon.
+**Pokémon integrados à API**
 - ✏️ Editar Pokémon.
 - 🗑️ Excluir Pokémon (com confirmação).
+- O cadastro de novos Pokémon não está disponível na interface; o endpoint `POST /api/pokemons` continua existindo na API.
 
 **Extras**
 - ⭐ Favoritos (salvos no `localStorage` do navegador) e filtro "somente favoritos".
 - 🎲 Pokémon aleatório.
 - 📊 Ordenação por ID, nome e por cada atributo.
-- 🧑‍🚀 Área de treinadores, com insígnias e time de cada um (Pokémon repetidos aparecem agrupados, ex.: "Venonat x3").
+- 🧑‍🚀 **CRUD de treinadores**: cada pessoa pode criar o seu próprio treinador, informando o nome e escolhendo o time (até 6 Pokémon, com busca por nome ou ID), além de editar e excluir treinadores. Os times aparecem com Pokémon repetidos agrupados (ex.: "Venonat x3").
 - 🎨 Cores por tipo, tema escuro e layout responsivo.
 
 ---
@@ -52,10 +52,10 @@ Pokedex/
 ├── backend/
 │   ├── src/main/java/com/pokedex/
 │   │   ├── config/          # CORS, DataSeeder e SqlInsertParser (carga a partir do .sql)
-│   │   ├── controller/      # PokemonController (endpoints REST)
-│   │   ├── model/           # Pokemon, Stats, PokemonType
-│   │   ├── repository/      # PokemonRepository (Spring Data MongoDB)
-│   │   ├── service/         # PokemonService (regras de negócio)
+│   │   ├── controller/      # PokemonController e TrainerController (endpoints REST)
+│   │   ├── model/           # Pokemon, Stats, PokemonType, Trainer
+│   │   ├── repository/      # PokemonRepository e TrainerRepository (Spring Data MongoDB)
+│   │   ├── service/         # PokemonService e TrainerService (regras de negócio)
 │   │   └── PokedexApplication.java
 │   ├── src/main/resources/
 │   │   ├── application.properties
@@ -65,9 +65,9 @@ Pokedex/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/      # SearchBar, TypeFilter, PokemonList, PokemonCard,
-│   │   │                    # PokemonDetails, PokemonForm, TrainersPanel, ...
+│   │   │                    # PokemonDetails, PokemonForm, TrainersPanel, TrainerForm, ...
 │   │   ├── css/             # estilos dos componentes
-│   │   ├── hooks/           # usePokemons (acesso à API)
+│   │   ├── hooks/           # usePokemons e useTrainers (acesso à API)
 │   │   ├── services/        # api.js (chamadas HTTP)
 │   │   ├── utils/           # data.js, typeColors.js
 │   │   ├── App.jsx
@@ -189,7 +189,25 @@ URL base: `http://localhost:8080/api`
 | `PUT` | `/pokemons/{id}` | Atualiza um Pokémon | `200` / `404` |
 | `DELETE` | `/pokemons/{id}` | Remove um Pokémon | `204` / `404` |
 
-### Exemplo de documento
+### Treinadores
+
+| Método | Endpoint | Descrição | Resposta |
+|---|---|---|---|
+| `GET` | `/trainers` | Lista todos os treinadores | `200` |
+| `GET` | `/trainers/{id}` | Busca um treinador pelo ID | `200` / `404` |
+| `POST` | `/trainers` | Cadastra um treinador (o ID é gerado automaticamente) | `201` / `400` |
+| `PUT` | `/trainers/{id}` | Atualiza um treinador | `200` / `400` / `404` |
+| `DELETE` | `/trainers/{id}` | Remove um treinador | `204` / `404` |
+
+Regras de validação (`400`): nome obrigatório, insígnias não negativas, no máximo 6 Pokémon no time e todos os IDs do time precisam existir na coleção de Pokémon.
+
+Exemplo de corpo (`POST /api/trainers`):
+
+```json
+{ "name": "Ash", "badges": 9, "pokemonIds": [25, 3, 6] }
+```
+
+### Exemplo de documento de Pokémon
 
 ```json
 {
@@ -237,7 +255,7 @@ Os dados vêm do `Script_Pokedex.sql`, que está no modelo relacional, e são ad
 
 Assim, uma única consulta traz tudo o que a interface precisa, sem junções. Pokémon sem tipo no script (como o Mew) ficam com `types` vazio.
 
-As tabelas `Trainers` e `Rel_Trainer_Pokemon` não são gravadas no MongoDB: a área de treinadores do front-end ainda usa o arquivo `pokedex-data.json` local.
+As tabelas `Trainers` e `Rel_Trainer_Pokemon` viram a coleção **`trainers`**: um documento por treinador, com `name`, `badges` e `pokemonIds` (lista de IDs do time, na ordem do script e com repetições permitidas, como o Koga com três Venonat).
 
 | Campo | Tipo | Descrição |
 |---|---|---|
@@ -285,6 +303,6 @@ Nenhuma imagem é armazenada no banco de dados ou no repositório. A exibição 
 - **Instituição:** PUC Minas — campus Lourdes
 - **Atividade:** 04 — Pokédex com Spring Boot + MongoDB
 
-## 👥 Autor
+## 👤 Autor
 
 - Alexandre Sampaio Guimarães Ribeiro
